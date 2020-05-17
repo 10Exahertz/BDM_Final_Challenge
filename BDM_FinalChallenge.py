@@ -8,11 +8,12 @@ Created on Sun May 17 15:22:24 2020
 from pyspark import SparkContext
 from pyspark.sql.session import SparkSession
 import pydoop.hdfs as hd
-
-sc = SparkContext()
-spark = SparkSession(sc)
 import pandas as pd
 from collections import defaultdict
+def dd():
+    return defaultdict(list)
+def ddd():
+    return defaultdict(dd)
 
 def main(sc):
     with hd.open('/data/share/bdm/nyc_cscl.csv') as f:
@@ -34,10 +35,6 @@ def main(sc):
     
     CSCL = CSCL[['BOROCODE','ST_LABEL','FULL_STREE','L_LOW_HN','L_HIGH_HN','R_LOW_HN','R_HIGH_HN','L_LOW_HN1','L_HIGH_HN1','R_LOW_HN1','R_HIGH_HN1','PHYSICALID']]
 
-    def dd():
-        return defaultdict(list)
-    def ddd():
-        return defaultdict(dd)
     CSCL_T = defaultdict(ddd)
 
 
@@ -52,7 +49,7 @@ def main(sc):
     CSCL_T2 = sc.broadcast(CSCL_T2).value
     def GetPhys(boro):
         ind = CSCL.index[CSCL['BOROCODE']==boro].tolist()
-            return CSCL.loc[ind,'PHYSICALID']
+        return CSCL.loc[ind,'PHYSICALID']
     def BoroT(boro):
         if boro == 'K':
             return 3
@@ -171,7 +168,6 @@ def main(sc):
     from pyspark.sql.functions import col, when, lit, array
     DF_C = counts.toDF(["PHYSID","YearCount"])
     DF_C = DF_C.withColumn("YearCount", array([col("YearCount").getField("_1"),col("YearCount").getField("_2")]))
-    DF_C.printSchema()
     DF_C = DF_C.withColumn('2019',when(DF_C.YearCount[1]==2019,DF_C.YearCount[0]).otherwise(0))
     DF_C = DF_C.withColumn('2018',when(DF_C.YearCount[1]==2018,DF_C.YearCount[0]).otherwise(0))
     DF_C = DF_C.withColumn('2017',when(DF_C.YearCount[1]==2017,DF_C.YearCount[0]).otherwise(0))
