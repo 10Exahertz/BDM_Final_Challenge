@@ -7,8 +7,6 @@ Created on Sun May 17 15:22:24 2020
 """
 from pyspark import SparkContext
 from pyspark.sql.session import SparkSession
-import pydoop.hdfs as hd
-import pandas as pd
 from collections import defaultdict
 def dd():
     return defaultdict(list)
@@ -16,8 +14,14 @@ def ddd():
     return defaultdict(dd)
 
 def main(sc):
-    with hd.open('/data/share/bdm/nyc_cscl.csv') as f:
-        CSCL = pd.read_csv(f)
+    import pandas as pd
+    C_file = '/data/share/bdm/nyc_cscl.csv'
+    #C_file = 'Parking_Violations/Centerline.csv'
+
+    dfcent = spark.read.load(C_file, format='csv',
+                          header = True,
+                          inferSchema = True)
+    CSCL = dfcent.select("*").toPandas()
     CSCL = CSCL.dropna(subset=['L_LOW_HN','R_LOW_HN','R_HIGH_HN','L_HIGH_HN',], axis=0)
     CSCL['ST_LABEL'] = CSCL['ST_LABEL'].map(lambda x: x.lower())
     CSCL['FULL_STREE'] = CSCL['FULL_STREE'].map(lambda x: x.lower())
@@ -160,6 +164,7 @@ def main(sc):
         return counts.items()
             
     rdd = sc.textFile('/data/share/bdm/nyc_parking_violations/*.csv')
+    #rdd = sc.textFile('Parking_Violations/Parking_Violations_Issued_-_Fiscal_Year_2019_Small.csv')
     counts = rdd.mapPartitionsWithIndex(processTrips) \
                 .reduceByKey(lambda x,y: x+y) \
                 .map(lambda x: (x[0][0],(x[1],x[0][1]))) \
@@ -175,11 +180,6 @@ def main(sc):
     DF_C = DF_C.withColumn('2015',when(DF_C.YearCount[1]==2015,DF_C.YearCount[0]).otherwise(0))
     DF_C = DF_C.select(DF_C["PHYSID"],DF_C["2015"],DF_C["2016"],DF_C["2017"],DF_C["2018"],DF_C["2019"])
     from pyspark.sql.functions import size, col,split
-    C_file = '/data/share/bdm/nyc_cscl.csv'
-
-    dfcent = spark.read.load(C_file, format='csv',
-                          header = True,
-                          inferSchema = True)
     dfcent = dfcent.select('PHYSICALID')
     dfcent = dfcent.withColumn('2015',lit(0))
     dfcent = dfcent.withColumn('2016',lit(0))
