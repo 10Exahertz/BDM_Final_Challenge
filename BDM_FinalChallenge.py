@@ -24,7 +24,7 @@ def main(sc):
     CSCL = dfcent.select("*").toPandas()
     CSCL = CSCL.dropna(subset=['L_LOW_HN','R_LOW_HN','R_HIGH_HN','L_HIGH_HN',], axis=0)
     CSCL['ST_LABEL'] = CSCL['ST_LABEL'].map(lambda x: x.lower())
-    CSCL['FULL_STREE'] = CSCL['FULL_STREE'].map(lambda x: x.lower())
+    CSCL['FULL_STREE'] = CSCL['FULL_STREE'].map(lambda x: x.lower() if pd.notnull(x) else x)
     CSCL['L_LOW_HN'] = CSCL['L_LOW_HN'].map(lambda x: tuple([int(i) for i in x.split('-')]))
     CSCL[['L_LOW_HN','L_LOW_HN1']] = pd.DataFrame(CSCL['L_LOW_HN'].tolist(),index =CSCL.index)
 
@@ -48,7 +48,7 @@ def main(sc):
                    
     CSCL_T2 = defaultdict(ddd)
     for row in CSCL.itertuples():
-        CSCL_T[row[1]][row[3]][row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11]].append(row[12])
+        CSCL_T2[row[1]][row[3]][row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11]].append(row[12])
     CSCL_T = sc.broadcast(CSCL_T).value
     CSCL_T2 = sc.broadcast(CSCL_T2).value
     def GetPhys(boro):
