@@ -43,8 +43,8 @@ CSCL_T2 = defaultdict(ddd)
 #print("Mem",CSCL.memory_usage(index=True, deep=True).sum())
 #CSCL = CSCL.values.tolist()
 def main():
-    #C_file = '/data/share/bdm/nyc_cscl.csv'
-    C_file = 'Parking_Violations/Centerline.csv'
+    C_file = '/data/share/bdm/nyc_cscl.csv'
+    #C_file = 'Parking_Violations/Centerline.csv'
 
     dfcent = spark.read.load(C_file, format='csv',
                           header = True,
@@ -202,8 +202,8 @@ def main():
                 counts[(ID,year)] = counts.get((ID,year), 0) + 1
         return counts.items()
             
-    #rdd = sc.textFile('/data/share/bdm/nyc_parking_violation/*.csv')
-    rdd = sc.textFile('Parking_Violations/Parking_Violations_Issued_-_Fiscal_Year_2019_Small.csv')
+    rdd = sc.textFile('/data/share/bdm/nyc_parking_violation/*.csv')
+    #rdd = sc.textFile('Parking_Violations/Parking_Violations_Issued_-_Fiscal_Year_2019_Small.csv')
     counts = rdd.mapPartitionsWithIndex(processTrips) \
                 .reduceByKey(lambda x,y: x+y) \
                 .map(lambda x: (x[0][0],(x[1],x[0][1]))) \
@@ -230,8 +230,8 @@ def main():
     DF_C = DF_C.withColumn('OLS',(-2*(DF_C[1]-((DF_C[1]+DF_C[2]+DF_C[3]+DF_C[4]+DF_C[5])/5))-1*(DF_C[2]-((DF_C[1]+DF_C[2]+DF_C[3]+DF_C[4]+DF_C[5])/5))-0*(DF_C[3]-((DF_C[1]+DF_C[2]+DF_C[3]+DF_C[4]+DF_C[5])/5))+1*(DF_C[4]-((DF_C[1]+DF_C[2]+DF_C[3]+DF_C[4]+DF_C[5])/5))+2*(DF_C[5]-((DF_C[1]+DF_C[2]+DF_C[3]+DF_C[4]+DF_C[5])/5)))/(10))
     DF_C = DF_C.orderBy('PHYSID')
 
-    DF_C.show()
-    #DF_C.write.csv('Output2019_test.csv')
+    #DF_C.show()
+    DF_C.write.csv('Output2019_test.csv')
 
 if __name__ == "__main__":
 #    sc = SparkContext()
